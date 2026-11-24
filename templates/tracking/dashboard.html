@@ -1,0 +1,95 @@
+{% extends "base.html" %}{% load tracking_tags %}
+{% block title %}Overview{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div><h1>Intern overview</h1><p class="desc">Hours for interns included in the summary, across all work units.</p></div>
+  <div class="page-actions">
+    <a class="btn secondary" href="{% url 'records' %}?{% if start %}start={{ start|date:'Y-m-d' }}&amp;{% endif %}{% if end %}end={{ end|date:'Y-m-d' }}{% endif %}">View entries</a>
+    <a class="btn" href="{% url 'reports' %}?download=1&amp;scope=all&amp;file_format=xlsx{% if start %}&amp;start={{ start|date:'Y-m-d' }}{% endif %}{% if end %}&amp;end={{ end|date:'Y-m-d' }}{% endif %}">Export to Excel</a>
+  </div>
+</div>
+
+{% if user.is_admin_role and review_count %}
+<div class="notice"><span>{{ review_count }} imported row{{ review_count|pluralize }} from the Excel tracker {{ review_count|pluralize:"is,are" }} waiting for review.</span><a href="{% url 'review_queue' %}">Open import review</a></div>
+{% endif %}
+
+{% include "tracking/_periodbar.html" %}
+{% include "tracking/_stats.html" %}
+
+<section class="panel" aria-labelledby="matrix-title">
+    <div class="panel-head"><h2 id="matrix-title">Hours by intern and work unit</h2><span class="desc">Select a column heading to sort</span></div>
+    <div class="table-box" style="border:0">
+    <table class="matrix sortable">
+      <thead><tr>
+        <th scope="col" data-sort="text">Intern</th>
+        {% for u in matrix.units %}<th scope="col" class="num" data-sort="num">{{ u }}</th>{% endfor %}
+        <th scope="col" class="num" data-sort="num">Total</th>
+        <th scope="col" class="num" data-sort="num">Tasks</th>
+        <th scope="col" class="num" data-sort="num">Backlog</th>
+        <th scope="col" class="num" data-sort="num">AI-assisted</th>
+      </tr></thead>
+      <tbody>
+      {% for row in matrix.rows %}
+        <tr>
+          <th scope="row"><a href="{% url 'intern_detail' row.intern_id %}?{% if start %}start={{ start|date:'Y-m-d' }}&amp;{% endif %}{% if end %}end={{ end|date:'Y-m-d' }}{% endif %}">{{ row.intern }}</a></th>
+          {% for c in row.cells %}<td class="num{% if not c %} zero{% endif %}" data-value="{{ c }}">{% if c %}{{ c|hrs }}{% else %}-{% endif %}</td>{% endfor %}
+          <td class="num strong" data-value="{{ row.total }}">{{ row.total|hrs }}<span class="databar" data-bar="{{ row.total }}" data-bar-group="intern-total"><span></span></span></td>
+          <td class="num">{{ row.tasks }}</td>
+          <td class="num" data-value="{{ row.backlog_hours }}">{{ row.backlog_hours|hrs }}</td>
+          <td class="num" data-value="{{ row.ai_hours }}">{{ row.ai_hours|hrs }}</td>
+        </tr>
+      {% empty %}
+        <tr data-fixed><td colspan="99" class="empty">No time logged in this period. Choose another quarter or range.</td></tr>
+      {% endfor %}
+      </tbody>
+      {% if matrix.rows %}
+      <tfoot><tr><td>Total</td>{% for t in matrix.unit_totals %}<td class="num">{{ t|hrs }}</td>{% endfor %}<td class="num">{{ matrix.grand_total|hrs }}</td><td class="num">{{ kpis.task_count }}</td><td class="num">{{ kpis.backlog_hours|hrs }}</td><td class="num">{{ kpis.ai_hours|hrs }}</td></tr></tfoot>
+      {% endif %}
+    </table>
+    </div>
+  </section>
+
+
+<div class="cols-dash section">
+  <section class="panel" aria-labelledby="roster-title">
+    <div class="panel-head"><h2 id="roster-title">Intern roster</h2><span class="desc">Includes former interns and those excluded from the summary</span></div>
+    <div class="table-box" style="border:0">
+    <table class="sortable">
+      <thead><tr>
+        <th scope="col" data-sort="text">Name</th><th scope="col" data-sort="text">Home department</th><th scope="col" data-sort="text">Status</th>
+        <th scope="col" data-sort="text">In summary</th><th scope="col" data-sort="text">Last entry</th><th scope="col" data-sort="text">Sign-in</th>
+        {% if user.is_admin_role %}<th scope="col" class="num" data-sort="num">To review</th>{% endif %}
+      </tr></thead>
+      <tbody>
+      {% for i in interns %}
+      <tr>
+        <td class="nowrap"><a href="{% url 'intern_detail' i.pk %}">{{ i.display_name }}</a></td>
+        <td>{{ i.home_department|default:"None" }}</td>
+        <td><span class="status {{ i.status }}">{{ i.get_status_display }}</span></td>
+        <td>{{ i.include_in_summary|yesno:"Yes,No" }}</td>
+        <td class="nowrap" data-value="{{ i.last_entry|date:'Y-m-d' }}">{{ i.last_entry|date:"M j, Y"|default:"No entries" }}</td>
+        <td>{% if i.user_id %}Linked{% else %}<span class="muted">Not linked</span>{% endif %}</td>
+        {% if user.is_admin_role %}<td class="num{% if not i.flagged %} zero{% endif %}" data-value="{{ i.flagged }}">{% if i.flagged %}{{ i.flagged }}{% else %}-{% endif %}</td>{% endif %}
+      </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+    </div>
+  </section>
+
+  <section class="panel" aria-labelledby="units-title">
+    <div class="panel-head"><h2 id="units-title">Hours by work unit</h2><span class="desc">Share of {{ matrix.grand_total|hrs }} hours</span></div>
+    {% if matrix.rows %}
+    <ul class="breakdown">
+      {% for unit, hours in matrix.unit_breakdown %}
+      <li>
+        <span>{{ unit }}</span>
+        <span class="val">{{ hours|hrs }} <span class="pct">{% widthratio hours matrix.grand_total 100 %}%</span></span>
+        <span class="track" aria-hidden="true"><span style="width: {% widthratio hours matrix.grand_total 100 %}%"></span></span>
+      </li>
+      {% endfor %}
+    </ul>
+    {% else %}<p class="empty">No hours in this period.</p>{% endif %}
+  </section>
+</div>
+{% endblock %}

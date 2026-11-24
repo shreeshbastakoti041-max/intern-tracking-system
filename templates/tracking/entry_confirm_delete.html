@@ -1,0 +1,19 @@
+{% extends "base.html" %}{% load tracking_tags %}
+{% block title %}Delete entry{% endblock %}
+{% block content %}
+<div class="page-header"><div><h1>Delete entry</h1><p class="desc">The deletion is recorded in the entry history, so an administrator can restore it if needed.</p></div></div>
+<section class="panel narrow">
+  <div class="panel-body">
+    <dl class="facts">
+      <dt>Date</dt><dd>{{ entry.date|date:"l, M j, Y"|default:"No date" }}</dd>
+      <dt>Time</dt><dd>{% if entry.start_time %}{{ entry.start_time|time:"g:i A" }} - {{ entry.end_time|time:"g:i A" }}, {% endif %}{{ entry.hours|hrs }} hours</dd>
+      <dt>Work unit</dt><dd>{{ entry.work_unit|default:"None" }}</dd>
+      <dt>Task</dt><dd>{{ entry.description }}</dd>
+    </dl>
+    <form method="post" class="actions" style="margin-top:14px">{% csrf_token %}
+      <input type="hidden" name="next" value="{{ next }}">
+      <button class="btn danger">Delete entry</button><a class="btn secondary" href="{{ next }}">Cancel</a>
+    </form>
+  </div>
+</section>
+{% endblock %}

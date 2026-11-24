@@ -1,0 +1,6 @@
+{% extends "base.html" %}
+{% block title %}Time log{% endblock %}
+{% block content %}
+<div class="page-header"><div><h1>No intern profile linked</h1><p class="desc">Time is recorded against an intern profile. Ask the internship coordinator to link your account to your profile, then reload this page.</p></div></div>
+{% if user.can_view_all %}<a class="btn secondary" href="{% url 'dashboard' %}">Go to the overview</a>{% endif %}
+{% endblock %}

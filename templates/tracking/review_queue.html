@@ -1,0 +1,41 @@
+{% extends "base.html" %}{% load tracking_tags %}
+{% block title %}Import review{% endblock %}
+{% block content %}
+<div class="page-header"><div>
+  <h1>Import review</h1>
+  <p class="desc">Rows imported from the Excel tracker that need a check. Values are stored exactly as entered in Excel. Use Edit to correct a row (hours are recalculated from the times), or Mark reviewed if it is correct.</p>
+</div></div>
+<div class="table-box">
+<table>
+  <thead><tr><th scope="col">Intern</th><th scope="col">Date</th><th scope="col">Task</th><th scope="col">Time</th><th scope="col" class="num">Hours</th><th scope="col">Issue</th><th scope="col"><span class="visually-hidden">Actions</span></th></tr></thead>
+  <tbody>
+  {% for e in page %}
+  <tr>
+    <td class="nowrap">{{ e.intern }}</td>
+    <td class="nowrap">{{ e.date|date:"M j, Y"|default:"No date" }}</td>
+    <td>{{ e.description|default:"No description" }}<span class="sub">{{ e.work_unit|default:"No work unit" }}</span>
+      {% if e.imported_row %}<details class="source"><summary>Excel: {{ e.imported_row.sheet_name }}, row {{ e.imported_row.row_number }}</summary>
+        <dl class="cells">{% for col, cell in e.imported_row.raw.items %}<dt>{{ col }}</dt><dd>{{ cell.value|default_if_none:"" }}{% if cell.formula %} <span class="muted">({{ cell.formula }})</span>{% endif %}</dd>{% endfor %}</dl>
+      </details>{% endif %}</td>
+    <td class="nowrap">{% if e.start_time %}{{ e.start_time|time:"g:i A" }} - {{ e.end_time|time:"g:i A" }}{% endif %}</td>
+    <td class="num">{{ e.hours|hrs }}</td>
+    <td><ul class="flags">{% for f in e.review_flags %}<li>{{ f|flag_label }}</li>{% endfor %}</ul></td>
+    <td><div class="actions" style="flex-wrap:nowrap">
+      <a class="btn secondary sm" href="{% url 'entry_edit' e.pk %}?next={{ request.get_full_path|urlencode }}">Edit</a>
+      <form method="post" action="{% url 'mark_reviewed' e.pk %}" class="inline">{% csrf_token %}<input type="hidden" name="next" value="{{ request.get_full_path }}"><button class="btn sm">Mark reviewed</button></form>
+    </div></td>
+  </tr>
+  {% empty %}
+  <tr><td colspan="7" class="empty">All imported rows have been reviewed.</td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% if page.paginator.count %}
+<div class="pager">
+  <span>{% if page.has_previous %}<a href="?page={{ page.previous_page_number }}">Previous</a>{% endif %}</span>
+  <span>{{ page.start_index }}-{{ page.end_index }} of {{ page.paginator.count }} rows</span>
+  <span>{% if page.has_next %}<a href="?page={{ page.next_page_number }}">Next</a>{% endif %}</span>
+</div>
+{% endif %}
+</div>
+{% endblock %}

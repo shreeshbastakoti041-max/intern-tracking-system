@@ -1,0 +1,16 @@
+{% load tracking_tags %}
+<div class="table-box">
+<table class="sortable">
+  <thead><tr><th scope="col" data-sort="text">Work unit</th><th scope="col" class="num" data-sort="num">Hours</th><th scope="col" class="num" data-sort="num">Tasks</th></tr></thead>
+  <tbody>
+  {% for row in by_unit %}
+  <tr>
+    <td>{{ row.unit }}<span class="databar" data-bar="{{ row.hours }}" data-bar-group="unit"><span></span></span></td>
+    <td class="num" data-value="{{ row.hours }}">{{ row.hours|hrs }}</td>
+    <td class="num">{{ row.tasks }}</td>
+  </tr>
+  {% empty %}<tr data-fixed><td colspan="3" class="empty">No time logged in this period.</td></tr>{% endfor %}
+  </tbody>
+  {% if by_unit %}<tfoot><tr><td>Total</td><td class="num">{{ kpis.total_hours|hrs }}</td><td class="num">{{ kpis.task_count }}</td></tr></tfoot>{% endif %}
+</table>
+</div>

@@ -1,0 +1,23 @@
+<form method="get" class="periodbar" aria-label="Reporting period">
+  <div class="pb-group">
+    <span class="pb-label">{{ range_form.quarters.0.label|slice:":4" }}</span>
+    <nav class="seg" aria-label="Fiscal year quarters">
+      {% for p in range_form.quarters %}<a href="?period={{ p.key }}" class="{% if p.is_future %}future{% endif %}{% if p.is_current %} today{% endif %}"{% if range_form.active_key == p.key %} aria-current="true"{% endif %} title="{{ p.start|date:'M j, Y' }} to {{ p.end|date:'M j, Y' }}{% if p.is_current %} (current quarter){% endif %}">Q{{ forloop.counter }}<span class="range">{{ p.start|date:"M" }}-{{ p.end|date:"M" }}</span></a>{% endfor %}
+    </nav>
+  </div>
+  <div class="pb-group">
+    <label class="pb-label" for="pb-period">Range</label>
+    <select name="period" id="pb-period">
+      <option value=""{% if range_form.active_key == "custom" %} selected{% endif %}>Custom dates</option>
+      {% for p in range_form.shortcuts %}<option value="{{ p.key }}"{% if range_form.active_key == p.key %} selected{% endif %}>{{ p.label }}</option>{% endfor %}
+      {% for p in range_form.quarters %}<option value="{{ p.key }}"{% if range_form.active_key == p.key %} selected{% endif %}>{{ p.label }}</option>{% endfor %}
+    </select>
+  </div>
+  <div class="pb-dates">
+    <label for="id_start">From</label>{{ range_form.start }}
+    <label for="id_end">To</label>{{ range_form.end }}
+    <button class="btn sm secondary">Apply</button>
+  </div>
+  <div class="pb-showing">Showing <strong>{{ range_label }}</strong>{% if start or end %}, {{ start|date:"M j, Y"|default:"first entry" }} to {{ end|date:"M j, Y"|default:"today" }}{% endif %}</div>
+  {% for e in range_form.non_field_errors %}<p class="pb-error">{{ e }}</p>{% endfor %}
+</form>

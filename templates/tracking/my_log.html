@@ -1,0 +1,56 @@
+{% extends "base.html" %}{% load tracking_tags %}
+{% block title %}Time log{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div><h1>Time log</h1><p class="desc">Week of {{ week_start|date:"M j" }} to {{ week_end|date:"M j, Y" }}: {{ week_total|hrs }} hours</p></div>
+  <nav class="page-actions" aria-label="Week">
+    <a class="btn secondary sm" href="?week={{ prev_week }}">Previous week</a>
+    {% if not is_current_week %}<a class="btn secondary sm" href="{% url 'my_log' %}">Current week</a>{% endif %}
+    <a class="btn secondary sm" href="?week={{ next_week }}">Next week</a>
+  </nav>
+</div>
+
+<div class="cols-log">
+  <section class="panel sticky" aria-labelledby="new-entry">
+    <div class="panel-head"><h2 id="new-entry">New entry</h2></div>
+    <form method="post" class="panel-body" data-entry-form action="{% url 'my_log' %}?week={{ week_start|date:'Y-m-d' }}">
+      {% csrf_token %}
+      {% include "tracking/_entry_fields.html" %}
+      <button class="btn block">Save entry</button>
+    </form>
+  </section>
+
+  <section aria-label="Entries this week">
+    <div class="table-box">
+    <table class="week">
+      <thead><tr><th scope="col">Time</th><th scope="col">Work unit</th><th scope="col">Task</th><th scope="col" class="num">Hours</th><th scope="col"><span class="visually-hidden">Actions</span></th></tr></thead>
+      <tbody>
+      {% now "Y-m-d" as today_iso %}
+      {% for day in days %}
+        <tr class="day{% if day.date|date:'Y-m-d' == today_iso %} today{% endif %}">
+          <th scope="colgroup" colspan="3">{{ day.date|date:"l, M j" }}{% if day.date|date:'Y-m-d' == today_iso %} <span class="muted small">(today)</span>{% endif %}</th>
+          <th class="num">{% if day.entries %}{{ day.total|hrs }}{% endif %}</th><th></th>
+        </tr>
+        {% for e in day.entries %}
+        <tr>
+          <td class="nowrap">{% if e.start_time %}{{ e.start_time|time:"g:i A" }} - {{ e.end_time|time:"g:i A" }}{% endif %}</td>
+          <td class="nowrap">{{ e.work_unit|default:"None" }}</td>
+          <td>{{ e.description }}{% if e.is_backlog %}<span class="tag">Backlog</span>{% endif %}{% if e.ai_used %}<span class="tag">AI</span>{% endif %}{% if e.needs_review %}<span class="tag flag">Under review</span>{% endif %}</td>
+          <td class="num">{{ e.hours|hrs }}</td>
+          <td><div class="row-actions">
+            <a href="{% url 'entry_edit' e.pk %}">Edit</a>
+            <a href="?week={{ week_start|date:'Y-m-d' }}&amp;copy={{ e.pk }}" title="Copy this task into the new entry form">Copy</a>
+            <a href="{% url 'entry_delete' e.pk %}">Delete</a>
+          </div></td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="5" class="none">No entries</td></tr>
+        {% endfor %}
+      {% endfor %}
+      </tbody>
+      <tfoot><tr><td colspan="3">Week total</td><td class="num">{{ week_total|hrs }}</td><td></td></tr></tfoot>
+    </table>
+    </div>
+  </section>
+</div>
+{% endblock %}

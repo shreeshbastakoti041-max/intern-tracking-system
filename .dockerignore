@@ -1,0 +1,10 @@
+.git
+.venv
+__pycache__
+*.pyc
+*.xlsx
+*.csv
+*.sqlite3
+.env
+data/
+staticfiles/

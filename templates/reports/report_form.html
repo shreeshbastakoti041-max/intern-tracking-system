@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block title %}Reports{% endblock %}
+{% block content %}
+<div class="page-header"><div><h1>Reports</h1><p class="desc">Excel reports contain a summary sheet (hours by work unit, backlog and AI-assisted totals) and a sheet with every entry. CSV files contain entries only.</p></div></div>
+<section class="panel narrow">
+  <div class="panel-head"><h2>Report options</h2></div>
+  <form method="get" class="panel-body">
+    <input type="hidden" name="download" value="1">
+    {% if form.non_field_errors %}<ul class="errorlist nonfield">{% for e in form.non_field_errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+    <fieldset class="choices"><legend>Interns</legend>{{ form.scope }}</fieldset>
+    <div class="field"><label for="id_intern">Intern <span class="opt">(for a single-intern report)</span></label>{{ form.intern }}{{ form.intern.errors }}</div>
+    <div class="field"><label for="id_period">Period</label>{{ form.period }}<span class="hint">Choose “Custom range” and leave the dates empty to include all entries.</span></div>
+    <div class="field-row">
+      <div class="field"><label for="id_start">From</label>{{ form.start }}{{ form.start.errors }}</div>
+      <div class="field"><label for="id_end">To</label>{{ form.end }}{{ form.end.errors }}</div>
+    </div>
+    <fieldset class="choices"><legend>File type</legend>{{ form.file_format }}</fieldset>
+    <div class="field checks"><label>{{ form.include_excluded }} Include interns excluded from the summary</label></div>
+    <button class="btn">Download report</button>
+  </form>
+</section>
+{% endblock %}

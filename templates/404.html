@@ -1,0 +1,3 @@
+{% extends "base.html" %}
+{% block title %}Page not found{% endblock %}
+{% block content %}<div class="page-header"><div><h1>Page not found</h1><p class="desc">The link may be out of date, or the record was deleted.</p></div></div><a class="btn secondary" href="{% url 'home' %}">Go to your start page</a>{% endblock %}

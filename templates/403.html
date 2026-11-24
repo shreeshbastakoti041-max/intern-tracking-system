@@ -1,0 +1,3 @@
+{% extends "base.html" %}
+{% block title %}Access denied{% endblock %}
+{% block content %}<div class="page-header"><div><h1>Access denied</h1><p class="desc">Your role does not include this page. Contact the internship coordinator if you need access.</p></div></div><a class="btn secondary" href="{% url 'home' %}">Go to your start page</a>{% endblock %}

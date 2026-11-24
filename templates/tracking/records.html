@@ -1,0 +1,17 @@
+{% extends "base.html" %}{% load tracking_tags %}
+{% block title %}Records{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div><h1>Records</h1><p class="desc">All time entries. Filter, then sort by selecting a column heading.</p></div>
+  <div class="page-actions"><a class="btn secondary" href="?{{ querystring }}{% if querystring %}&amp;{% endif %}export=csv">Export to CSV</a></div>
+</div>
+<form method="get" class="filterbar" aria-label="Filter entries">
+  {% if sort %}<input type="hidden" name="sort" value="{{ sort }}">{% endif %}
+  <div class="filter-grid">
+    {% for field in filter.form %}<div class="field"><label for="{{ field.id_for_label }}">{{ field.label }}</label>{{ field }}</div>{% endfor %}
+  </div>
+  <div class="filter-actions"><button class="btn sm">Apply filters</button><a href="{% url 'records' %}">Clear filters</a></div>
+</form>
+{% include "tracking/_stats.html" %}
+{% include "tracking/_entry_table.html" with show_intern=True %}
+{% endblock %}

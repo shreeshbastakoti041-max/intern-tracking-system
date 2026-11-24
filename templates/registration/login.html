@@ -1,0 +1,17 @@
+{% extends "signin_base.html" %}
+{% block title %}Sign in{% endblock %}
+{% block content %}
+<h1>Sign in</h1>
+<p class="desc">Use the email address your coordinator registered for you.</p>
+<form method="post">{% csrf_token %}
+  {% if form.non_field_errors %}<ul class="errorlist nonfield">{% for e in form.non_field_errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+  <div class="field"><label for="id_username">Email</label>{{ form.username }}</div>
+  <div class="field"><label for="id_password">Password</label>{{ form.password }}</div>
+  <input type="hidden" name="next" value="{{ next }}">
+  <button class="btn block">Sign in</button>
+</form>
+<div class="signin-foot">
+  <a href="{% url 'password_reset' %}">Forgot your password?</a>
+  {% if demo_mode %}<a class="btn secondary block" href="{% url 'demo_home' %}">Open demo without signing in</a>{% endif %}
+</div>
+{% endblock %}

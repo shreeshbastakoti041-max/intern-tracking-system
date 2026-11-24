@@ -1,0 +1,38 @@
+{% load tracking_tags %}
+<div class="table-box">
+<table>
+  <thead><tr>
+    {% sort_th "date" "Date" %}
+    {% if show_intern %}{% sort_th "intern" "Intern" %}{% endif %}
+    {% sort_th "unit" "Work unit" %}
+    <th scope="col">Task</th>
+    <th scope="col">Time</th>
+    {% sort_th "hours" "Hours" True %}
+    <th scope="col">Supervisor</th>
+    {% if user.is_admin_role %}<th scope="col"><span class="visually-hidden">Actions</span></th>{% endif %}
+  </tr></thead>
+  <tbody>
+  {% for e in page %}
+    <tr>
+      <td class="nowrap">{{ e.date|date:"M j, Y"|default:"No date" }}</td>
+      {% if show_intern %}<td class="nowrap"><a href="{% url 'intern_detail' e.intern_id %}">{{ e.intern }}</a></td>{% endif %}
+      <td class="nowrap">{{ e.work_unit|default:"None" }}{% if e.task_category %}<span class="sub">{{ e.task_category }}</span>{% endif %}</td>
+      <td>{{ e.description|default:"No description" }}{% if e.is_backlog %}<span class="tag">Backlog</span>{% endif %}{% if e.ai_used %}<span class="tag">AI</span>{% endif %}{% if e.needs_review %}<span class="tag flag" title="{% for f in e.review_flags %}{{ f|flag_label }}{% if not forloop.last %}; {% endif %}{% endfor %}">Needs check</span>{% endif %}{% if e.notes %}<span class="sub">{{ e.notes }}</span>{% endif %}</td>
+      <td class="nowrap">{% if e.start_time %}{{ e.start_time|time:"g:i A" }} - {{ e.end_time|time:"g:i A" }}{% endif %}</td>
+      <td class="num">{{ e.hours|hrs }}</td>
+      <td class="nowrap">{{ e.supervisor_display }}</td>
+      {% if user.is_admin_role %}<td><a href="{% url 'entry_edit' e.pk %}?next={{ request.get_full_path|urlencode }}">Edit</a></td>{% endif %}
+    </tr>
+  {% empty %}
+    <tr><td colspan="8" class="empty">No entries match. Widen the date range or remove a filter.</td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% if page.paginator.count %}
+<div class="pager">
+  <span>{% if page.has_previous %}<a href="{% page_url page.previous_page_number %}">Previous</a>{% endif %}</span>
+  <span>{{ page.start_index }}-{{ page.end_index }} of {{ page.paginator.count }} entries</span>
+  <span>{% if page.has_next %}<a href="{% page_url page.next_page_number %}">Next</a>{% endif %}</span>
+</div>
+{% endif %}
+</div>

@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block title %}My hours{% endblock %}
+{% block content %}
+<div class="page-header"><div><h1>My hours</h1><p class="desc">{{ profile.display_name }}, {{ profile.home_department|default:"no home department" }}</p></div>
+  <div class="page-actions"><a class="btn" href="{% url 'my_log' %}">Log time</a></div></div>
+{% include "tracking/_periodbar.html" %}
+{% include "tracking/_stats.html" %}
+<div class="cols-detail">
+  <section class="panel"><div class="panel-head"><h2>Hours by work unit</h2></div>{% include "tracking/_by_unit.html" %}</section>
+  <section><div class="section-title"><h2>Entries</h2></div>{% include "tracking/_entry_table.html" %}</section>
+</div>
+{% endblock %}

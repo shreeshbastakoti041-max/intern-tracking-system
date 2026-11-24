@@ -1,0 +1,33 @@
+# --- Real data must never be committed (public repo) ---
+*.xlsx
+*.xlsm
+*.xls
+*.csv
+data/
+*.sqlite3
+*.db
+*.dump
+*.sql
+*.bak
+
+# Secrets
+.env
+.env.*
+!.env.example
+
+# Python / tooling
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+staticfiles/
+media/
+
+# OS / editors
+.DS_Store
+.idea/
+.vscode/

@@ -1,0 +1,31 @@
+{% extends "base.html" %}{% load tracking_tags %}
+{% block title %}Edit entry{% endblock %}
+{% block content %}
+<div class="page-header"><div><h1>Edit entry</h1><p class="desc">{{ entry.intern }}{% if entry.source == "import" %}, imported from the Excel tracker{% endif %}</p></div></div>
+<div class="cols-detail">
+  <section class="panel">
+    <div class="panel-head"><h2>Entry details</h2></div>
+    <form method="post" class="panel-body" data-entry-form>
+      {% csrf_token %}
+      <input type="hidden" name="next" value="{{ next }}">
+      {% include "tracking/_entry_fields.html" %}
+      <div class="actions"><button class="btn">Save changes</button><a class="btn secondary" href="{{ next }}">Cancel</a></div>
+    </form>
+  </section>
+  {% if entry.needs_review or entry.imported_row %}
+  <section class="panel">
+    {% if entry.needs_review %}
+    <div class="panel-head"><h2>Review flags</h2></div>
+    <div class="panel-body">
+      <ul class="flags">{% for f in entry.review_flags %}<li>{{ f|flag_label }}</li>{% endfor %}</ul>
+      <p class="hint">Saving recalculates hours from the start and end times. The original Excel values remain on record.</p>
+    </div>
+    {% endif %}
+    {% if entry.imported_row %}
+    <div class="panel-head"><h2>Original Excel row</h2><span class="desc">{{ entry.imported_row.sheet_name }}, row {{ entry.imported_row.row_number }}</span></div>
+    <div class="panel-body"><dl class="cells" style="margin:0">{% for col, cell in entry.imported_row.raw.items %}<dt>{{ col }}</dt><dd>{{ cell.value|default_if_none:"" }}{% if cell.formula %} <span class="muted">({{ cell.formula }})</span>{% endif %}</dd>{% endfor %}</dl></div>
+    {% endif %}
+  </section>
+  {% endif %}
+</div>
+{% endblock %}

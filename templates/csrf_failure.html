@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block title %}Page out of date{% endblock %}
+{% block content %}
+<div class="page-header"><div>
+  <h1>That page was out of date</h1>
+  <p class="desc">Nothing was saved. This happens when a page stays open while you sign in, sign out or switch roles, for example after using the Back button or another tab. Open the page again and repeat the action.</p>
+</div></div>
+<div class="actions">
+  {% if demo_mode %}<a class="btn" href="{% url 'demo_home' %}">Back to choosing a role</a>{% endif %}
+  <a class="btn{% if demo_mode %} secondary{% endif %}" href="{% url 'home' %}">Go to your start page</a>
+</div>
+{% endblock %}

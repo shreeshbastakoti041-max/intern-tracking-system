@@ -1,0 +1,20 @@
+{% extends "base.html" %}{% load tracking_tags %}
+{% block title %}{{ profile.display_name }}{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1>{{ profile.display_name }}</h1>
+    <p class="desc">{{ profile.home_department|default:"No home department" }}, <span class="status {{ profile.status }}">{{ profile.get_status_display|lower }}</span>{% if profile.start_date %}, started {{ profile.start_date|date:"M j, Y" }}{% endif %}{% if profile.end_date %}, ended {{ profile.end_date|date:"M j, Y" }}{% endif %}{% if profile.notes %}. {{ profile.notes }}{% endif %}</p>
+  </div>
+  <div class="page-actions">
+    {% if user.is_admin_role %}<a class="btn secondary" href="{% url 'admin:tracking_internprofile_change' profile.pk %}">Edit profile</a>{% endif %}
+    <a class="btn" href="{% url 'reports' %}?download=1&amp;scope=intern&amp;intern={{ profile.pk }}&amp;file_format=xlsx{% if start %}&amp;start={{ start|date:'Y-m-d' }}{% endif %}{% if end %}&amp;end={{ end|date:'Y-m-d' }}{% endif %}">Export to Excel</a>
+  </div>
+</div>
+{% include "tracking/_periodbar.html" %}
+{% include "tracking/_stats.html" %}
+<div class="cols-detail">
+  <section class="panel"><div class="panel-head"><h2>Hours by work unit</h2></div>{% include "tracking/_by_unit.html" %}</section>
+  <section><div class="section-title"><h2>Entries</h2></div>{% include "tracking/_entry_table.html" %}</section>
+</div>
+{% endblock %}

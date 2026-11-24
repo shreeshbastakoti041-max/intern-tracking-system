@@ -1,0 +1,9 @@
+{% load tracking_tags %}
+<dl class="stats" aria-label="Totals for this period">
+  <div><dt>Hours logged</dt><dd>{{ kpis.total_hours|hrs }}</dd></div>
+  <div><dt>Backlog hours</dt><dd>{{ kpis.backlog_hours|hrs }}</dd></div>
+  <div><dt>AI-assisted hours</dt><dd>{{ kpis.ai_hours|hrs }}</dd></div>
+  <div><dt>Tasks</dt><dd>{{ kpis.task_count }}</dd></div>
+  <div><dt>Backlog tasks</dt><dd>{{ kpis.backlog_task_count }}</dd></div>
+  <div><dt>AI-assisted tasks</dt><dd>{{ kpis.ai_task_count }}</dd></div>
+</dl>

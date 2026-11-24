@@ -1,0 +1,57 @@
+{% load static %}<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Intern Tracker{% endblock %} - OSP Intern Tracker</title>
+  <link rel="stylesheet" href="{% static 'css/app.css' %}">
+  <script src="{% static 'js/app.js' %}" defer></script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<header class="suite">
+  <a class="suite-name" href="{% url 'home' %}">Intern Tracker</a>
+  <span class="suite-unit">Office of Sponsored Programs</span>
+  {% if user.is_authenticated %}
+  <div class="suite-user">
+    <span><span class="name">{{ user.get_full_name|default:user.email }}</span><span class="role">{{ user.get_role_display }}</span></span>
+    {% if not demo_mode %}<a href="{% url 'password_change' %}">Change password</a>{% endif %}
+    <form method="post" action="{% url 'logout' %}">{% csrf_token %}<button class="link-button">Sign out</button></form>
+  </div>
+  {% endif %}
+</header>
+{% if demo_mode %}
+<div class="demo-strip">Demo mode: all names and hours are made up.{% if user.is_authenticated %} You are viewing the site as the {{ user.get_role_display|lower }}.{% endif %} <a href="{% url 'demo_home' %}">Switch role</a></div>
+{% endif %}
+{% block frame %}
+{% with here=request.resolver_match.url_name %}
+<div class="frame{% if not user.is_authenticated %} no-side{% endif %}">
+  {% if user.is_authenticated %}
+  <nav class="side" aria-label="Main">
+    {% if user.intern_profile %}
+      <div class="side-group">My work</div>
+      <a href="{% url 'my_log' %}"{% if here == 'my_log' or here == 'entry_edit' or here == 'entry_delete' %} aria-current="page"{% endif %}>Time log</a>
+      <a href="{% url 'my_summary' %}"{% if here == 'my_summary' %} aria-current="page"{% endif %}>My hours</a>
+    {% endif %}
+    {% if user.can_view_all %}
+      <div class="side-group">Interns</div>
+      <a href="{% url 'dashboard' %}"{% if here == 'dashboard' or here == 'intern_detail' %} aria-current="page"{% endif %}>Overview</a>
+      <a href="{% url 'records' %}"{% if here == 'records' %} aria-current="page"{% endif %}>Records</a>
+      <a href="{% url 'reports' %}"{% if here == 'reports' %} aria-current="page"{% endif %}>Reports</a>
+    {% endif %}
+    {% if user.is_admin_role %}
+      <div class="side-group">Administration</div>
+      <a href="{% url 'review_queue' %}"{% if here == 'review_queue' %} aria-current="page"{% endif %}>Import review{% if nav_review_count %}<span class="badge" title="{{ nav_review_count }} rows to check">{{ nav_review_count }}</span>{% endif %}</a>
+      <a href="{% url 'admin:index' %}">Users and settings</a>
+    {% endif %}
+  </nav>
+  {% endif %}
+  <main class="main" id="main">
+    {% if messages %}<ul class="messages">{% for m in messages %}<li class="{{ m.tags }}">{{ m }}</li>{% endfor %}</ul>{% endif %}
+    {% block content %}{% endblock %}
+  </main>
+</div>
+{% endwith %}
+{% endblock %}
+</body>
+</html>

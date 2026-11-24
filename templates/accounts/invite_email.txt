@@ -1,0 +1,8 @@
+Hello{% if user.first_name %} {{ user.first_name }}{% endif %},
+
+You've been given an account on the OSP Intern Tracker ({{ user.get_role_display }}).
+Set your password using this link:
+
+{{ link }}
+
+Your sign-in email is {{ user.email }}. The link works once and expires in a few days.
