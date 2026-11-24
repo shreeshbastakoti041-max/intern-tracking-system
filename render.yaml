@@ -1,10 +1,11 @@
 # Render Blueprint: https://render.com/docs/blueprint-spec
-# Creates the web app and a PostgreSQL database, and redeploys on every push to main.
+# Free setup: Render's free web service + a free external PostgreSQL database (e.g. Neon).
+# No paid Render resources are created. Redeploys automatically on every push to main.
 services:
   - type: web
     name: osp-intern-tracker
     runtime: python
-    plan: free            # sleeps when idle; change to "starter" for always-on
+    plan: free            # free: sleeps after ~15 min idle, wakes in ~30-60 s
     region: oregon
     branch: main
     buildCommand: pip install -r requirements.txt && python manage.py collectstatic --noinput
@@ -16,25 +17,18 @@ services:
     envVars:
       - key: PYTHON_VERSION
         value: "3.12.7"
-      - key: DATABASE_URL
-        fromDatabase:
-          name: osp-intern-tracker-db
-          property: connectionString
       - key: DJANGO_SECRET_KEY
         generateValue: true
       - key: DJANGO_DEBUG
         value: "false"
       - key: DJANGO_SECURE_SSL
         value: "true"
-      # Asked for when you create the Blueprint; used once to create your admin login.
+      # Asked for when you create the Blueprint:
+      # the connection string from your free Neon (or other PostgreSQL) database.
+      - key: DATABASE_URL
+        sync: false
+      # Used once to create your admin login; delete after the first sign-in.
       - key: DJANGO_ADMIN_EMAIL
         sync: false
       - key: DJANGO_ADMIN_PASSWORD
         sync: false
-
-databases:
-  - name: osp-intern-tracker-db
-    plan: basic-256mb     # paid: free Render databases are deleted after 30 days
-    region: oregon
-    databaseName: tracker
-    user: tracker

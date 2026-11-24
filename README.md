@@ -91,24 +91,31 @@ production you must set `DJANGO_SECRET_KEY`, `DJANGO_ALLOWED_HOSTS`, `DATABASE_U
 `DJANGO_SECURE_SSL=true` when served over HTTPS. Set the `EMAIL_*` variables to send invites;
 without them, emails are printed to the console.
 
-## Hosting on Render (connected to GitHub)
+## Free hosting: Render + Neon (connected to GitHub)
 
-`render.yaml` defines the app and its PostgreSQL database. Render redeploys
-automatically on every push to `main`.
+`render.yaml` sets up a **free** Render web service. The database is a free
+[Neon](https://neon.tech) PostgreSQL database, which doesn't expire. No paid resources are
+created. Render redeploys automatically on every push to `main`.
 
-1. Sign in at [render.com](https://render.com) with GitHub, choose **New > Blueprint**,
-   and select this repository.
-2. When asked, enter **DJANGO_ADMIN_EMAIL** and **DJANGO_ADMIN_PASSWORD** (at least 10
-   characters). The first deploy creates that administrator account. Existing accounts are
-   never changed, so you can delete both variables after the first sign-in.
-3. Apply the Blueprint. When the deploy finishes, open the `https://<name>.onrender.com` URL
-   and sign in.
-4. To load the real data, go to **Import workbook**, run a dry run, check the reconciliation,
-   then upload again with **Save to the database** ticked. The file is not stored.
+1. **Create the database (Neon).** Sign up at neon.tech (free plan), create a project, and
+   copy its **connection string**. It looks like
+   `postgresql://user:password@ep-xxxx.us-west-2.aws.neon.tech/neondb?sslmode=require`.
+   Keep it private: it contains the database password.
+2. **Create the web app (Render).** Sign in at render.com with GitHub, choose
+   **New > Blueprint**, and select this repository. When asked, enter:
+   - **DATABASE_URL**: the Neon connection string
+   - **DJANGO_ADMIN_EMAIL** and **DJANGO_ADMIN_PASSWORD** (at least 10 characters): the
+     first deploy creates this administrator account
+3. Click **Apply**. When the deploy finishes, open the `https://<name>.onrender.com` URL and
+   sign in. Afterwards, delete `DJANGO_ADMIN_PASSWORD` under **Environment**. Existing
+   accounts are never changed by it.
+4. **Load the data.** Go to **Import workbook**, run a dry run, check the reconciliation, then
+   upload again with **Save to the database** ticked. The file is not stored.
 
-Costs: the database uses Render's smallest paid plan (`basic-256mb`), because free Render
-databases are deleted after 30 days. The web service is on the free plan, so it sleeps when
-idle and takes about 30 seconds to wake. Change `plan: free` to `starter` to keep it always on.
+Free-plan limits: the web service sleeps after about 15 minutes without visitors, so the first
+page after a quiet period takes 30 to 60 seconds. Neon's free database also pauses when idle
+and wakes on the next request. Free plans have storage and usage caps, but this app's data is
+small (the full Excel history is a few megabytes at most).
 
 ## Deployment (other hosts)
 

@@ -93,10 +93,16 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "intern_tracker.wsgi.application"
 
+if not DEBUG and not os.environ.get("DATABASE_URL"):
+    # Without this, a production server would silently use a local SQLite file, which
+    # hosts like Render erase on every restart.
+    raise ImproperlyConfigured("DATABASE_URL must be set when DJANGO_DEBUG is false.")
+
 DATABASES = {
     "default": dj_database_url.config(
         default=f"sqlite:///{BASE_DIR / 'db.sqlite3'}",
         conn_max_age=600,
+        conn_health_checks=True,  # free databases (e.g. Neon) pause when idle
     )
 }
 
