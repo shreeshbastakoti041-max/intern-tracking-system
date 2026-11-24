@@ -36,6 +36,12 @@ if not SECRET_KEY:
 ALLOWED_HOSTS = env_list("DJANGO_ALLOWED_HOSTS", "localhost,127.0.0.1")
 CSRF_TRUSTED_ORIGINS = env_list("DJANGO_CSRF_TRUSTED_ORIGINS", "")
 
+# Render provides the public host name; trust it automatically.
+RENDER_EXTERNAL_HOSTNAME = os.environ.get("RENDER_EXTERNAL_HOSTNAME")
+if RENDER_EXTERNAL_HOSTNAME:
+    ALLOWED_HOSTS.append(RENDER_EXTERNAL_HOSTNAME)
+    CSRF_TRUSTED_ORIGINS.append(f"https://{RENDER_EXTERNAL_HOSTNAME}")
+
 INSTALLED_APPS = [
     "django.contrib.admin",
     "django.contrib.auth",
@@ -137,6 +143,10 @@ AXES_FAILURE_LIMIT = 5
 AXES_COOLOFF_TIME = 1
 AXES_LOCKOUT_PARAMETERS = [["username", "ip_address"]]
 AXES_RESET_ON_SUCCESS = True
+if RENDER_EXTERNAL_HOSTNAME or env_bool("DJANGO_BEHIND_PROXY", False):
+    # Behind one reverse proxy (e.g. Render): use the client address it forwards.
+    AXES_IPWARE_PROXY_COUNT = 1
+    AXES_IPWARE_META_PRECEDENCE_ORDER = ["HTTP_X_FORWARDED_FOR", "REMOTE_ADDR"]
 
 CSRF_FAILURE_VIEW = "intern_tracker.views.csrf_failure"
 
@@ -179,6 +189,9 @@ STORAGES = {
 }
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+# Uploaded workbooks are read in memory / a temp file and never stored.
+FILE_UPLOAD_MAX_MEMORY_SIZE = 10 * 1024 * 1024
 
 # Email: console backend unless SMTP is configured.
 DEFAULT_FROM_EMAIL = os.environ.get("DEFAULT_FROM_EMAIL", "intern-tracker@localhost")

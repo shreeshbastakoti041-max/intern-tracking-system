@@ -1,0 +1,61 @@
+{% extends "base.html" %}{% load tracking_tags %}
+{% block title %}Import workbook{% endblock %}
+{% block content %}
+<div class="page-header"><div>
+  <h1>Import workbook</h1>
+  <p class="desc">Load the Excel intern tracker. Every row is kept exactly as entered, questionable rows are flagged for Import review, and the import is only saved if each intern's row count and hours match the workbook. Run a dry run first. The uploaded file is not stored.</p>
+</div></div>
+
+{% if error %}<ul class="messages"><li class="error">{{ error }}</li></ul>{% endif %}
+{% if result and not error %}
+  {% if result.dry_run %}<ul class="messages"><li class="warning">Dry run complete. Nothing was saved. If the figures below match the workbook, upload it again with “Save to the database” ticked.</li></ul>
+  {% else %}<ul class="messages"><li class="success">Imported {{ result.entries }} entries. {{ result.flagged }} are waiting in Import review.</li></ul>{% endif %}
+{% endif %}
+
+<div class="cols-detail">
+  <section class="panel">
+    <div class="panel-head"><h2>Upload</h2></div>
+    <form method="post" enctype="multipart/form-data" class="panel-body">
+      {% csrf_token %}
+      <div class="field"><label for="{{ form.file.id_for_label }}">{{ form.file.label }}</label>{{ form.file }}{{ form.file.errors }}</div>
+      <div class="field checks"><label>{{ form.save }} {{ form.save.label }}</label></div>
+      <span class="hint" style="margin:-6px 0 10px">{{ form.save.help_text }}</span>
+      <div class="field checks"><label>{{ form.replace }} {{ form.replace.label }}</label></div>
+      <span class="hint" style="margin:-6px 0 12px">{{ form.replace.help_text }}</span>
+      <button class="btn">Check workbook</button>
+    </form>
+  </section>
+
+  {% if result %}
+  <section class="panel">
+    <div class="panel-head"><h2>Reconciliation</h2><span class="desc">{{ parsed.filename }}</span></div>
+    <div class="table-box" style="border:0">
+    <table>
+      <thead><tr><th scope="col">Intern</th><th scope="col" class="num">Rows in Excel</th><th scope="col" class="num">Rows imported</th><th scope="col" class="num">Hours in Excel</th><th scope="col" class="num">Hours imported</th><th scope="col" class="num">Old Summary</th><th scope="col" class="num">Flagged</th><th scope="col">Result</th></tr></thead>
+      <tbody>
+      {% for r in result.per_intern %}
+      <tr>
+        <td class="nowrap">{{ r.intern }}</td>
+        <td class="num">{{ r.excel_rows }}</td><td class="num">{{ r.imported_rows }}</td>
+        <td class="num">{{ r.excel_hours|hrs }}</td><td class="num">{{ r.db_hours|hrs }}</td>
+        <td class="num">{% if r.old_summary_hours is not None %}{{ r.old_summary_hours|hrs }}{% else %}-{% endif %}</td>
+        <td class="num">{{ r.flagged }}</td>
+        <td>{% if r.ok %}Match{% else %}<strong style="color:var(--error)">Mismatch</strong>{% endif %}{% if r.explanation %}<span class="sub">{{ r.explanation }}</span>{% endif %}</td>
+      </tr>
+      {% endfor %}
+      </tbody>
+      <tfoot><tr><td>Total</td><td></td><td class="num">{{ result.entries }}</td><td></td><td class="num">{{ result.total_hours|hrs }}</td><td></td><td class="num">{{ result.flagged }}</td><td></td></tr></tfoot>
+    </table>
+    </div>
+    {% if result.flag_counts %}
+    <div class="panel-head"><h2>Rows flagged for review</h2></div>
+    <div class="panel-body"><dl class="facts">{% for code, n in result.flag_counts.items %}<dt>{{ n }}</dt><dd>{{ code|flag_label }}</dd>{% endfor %}</dl></div>
+    {% endif %}
+    {% if result.warnings %}
+    <div class="panel-head"><h2>Notes</h2></div>
+    <div class="panel-body"><ul class="flags">{% for w in result.warnings %}<li>{{ w }}</li>{% endfor %}</ul></div>
+    {% endif %}
+  </section>
+  {% endif %}
+</div>
+{% endblock %}

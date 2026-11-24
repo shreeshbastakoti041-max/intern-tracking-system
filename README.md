@@ -91,7 +91,26 @@ production you must set `DJANGO_SECRET_KEY`, `DJANGO_ALLOWED_HOSTS`, `DATABASE_U
 `DJANGO_SECURE_SSL=true` when served over HTTPS. Set the `EMAIL_*` variables to send invites;
 without them, emails are printed to the console.
 
-## Deployment (any host)
+## Hosting on Render (connected to GitHub)
+
+`render.yaml` defines the app and its PostgreSQL database. Render redeploys
+automatically on every push to `main`.
+
+1. Sign in at [render.com](https://render.com) with GitHub, choose **New > Blueprint**,
+   and select this repository.
+2. When asked, enter **DJANGO_ADMIN_EMAIL** and **DJANGO_ADMIN_PASSWORD** (at least 10
+   characters). The first deploy creates that administrator account. Existing accounts are
+   never changed, so you can delete both variables after the first sign-in.
+3. Apply the Blueprint. When the deploy finishes, open the `https://<name>.onrender.com` URL
+   and sign in.
+4. To load the real data, go to **Import workbook**, run a dry run, check the reconciliation,
+   then upload again with **Save to the database** ticked. The file is not stored.
+
+Costs: the database uses Render's smallest paid plan (`basic-256mb`), because free Render
+databases are deleted after 30 days. The web service is on the free plan, so it sleeps when
+idle and takes about 30 seconds to wake. Change `plan: free` to `starter` to keep it always on.
+
+## Deployment (other hosts)
 
 The repo is host-agnostic. With Docker:
 
@@ -104,7 +123,8 @@ docker compose exec web python manage.py createsuperuser
 On a platform without Docker, use any Python host with PostgreSQL. The build step is
 `pip install -r requirements.txt && python manage.py collectstatic --noinput`, the release
 step is `python manage.py migrate`, and the web process is
-`gunicorn intern_tracker.wsgi:application`.
+`gunicorn intern_tracker.wsgi:application`. Set `DJANGO_BEHIND_PROXY=true` when the app sits
+behind a reverse proxy.
 
 Back up the PostgreSQL database regularly. It is the system of record after cutover.
 

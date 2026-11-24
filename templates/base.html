@@ -42,6 +42,7 @@
     {% if user.is_admin_role %}
       <div class="side-group">Administration</div>
       <a href="{% url 'review_queue' %}"{% if here == 'review_queue' %} aria-current="page"{% endif %}>Import review{% if nav_review_count %}<span class="badge" title="{{ nav_review_count }} rows to check">{{ nav_review_count }}</span>{% endif %}</a>
+      <a href="{% url 'import_workbook' %}"{% if here == 'import_workbook' %} aria-current="page"{% endif %}>Import workbook</a>
       <a href="{% url 'admin:index' %}">Users and settings</a>
     {% endif %}
   </nav>
