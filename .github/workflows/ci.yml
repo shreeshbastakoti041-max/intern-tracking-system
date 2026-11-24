@@ -1,0 +1,42 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_DB: tracker
+          POSTGRES_USER: tracker
+          POSTGRES_PASSWORD: tracker
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U tracker" --health-interval 5s --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Refuse committed spreadsheets or data files
+        run: |
+          if git ls-files | grep -Ei '\.(xlsx|xlsm|xls|csv|sqlite3|dump)$'; then
+            echo "::error::Data files must never be committed to this public repository."; exit 1
+          fi
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - run: pip install -r requirements-dev.txt
+      - run: ruff check .
+      - name: Check for missing migrations
+        env: { DJANGO_DEBUG: "true" }
+        run: python manage.py makemigrations --check --dry-run
+      - name: Tests (SQLite)
+        run: pytest
+      - name: Tests (PostgreSQL)
+        env:
+          DATABASE_URL: postgres://tracker:tracker@localhost:5432/tracker
+        run: pytest
